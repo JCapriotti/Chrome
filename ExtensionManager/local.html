@@ -1,0 +1,30 @@
+
+<div class="col-md-12">
+	<h2>Local Extensions</h2>
+	<div>
+		<table class="table table-bordered">
+			<tr>
+				<th><a href="" ng-click="localPredicate = 'name'">Name</a></th>
+				<th><a href="" ng-click="localPredicate = ['type', 'name']">Type</a></th>
+				<th><a href="" ng-click="localPredicate = ['inMyList', 'name']">In My List</a></th>
+				<th class="text-center"><a href="" ng-click="localPredicate = ['enabled', 'name']">Enabled</a></th>
+				<th class="text-center">Uninstall</th>
+			</tr>
+			<tr ng-repeat="e in localExtensions | orderBy:localPredicate">
+				<td>
+					<img width="24" ng-src="{{e.iconUrl}}" />
+					<a target="_blank" ng-href="{{e.homepageUrl}}">{{e.name}}</a>
+				</td>
+				<td>{{e.type}}</td>
+				<td class="text-center">
+					<input type="checkbox" ng-model="e.inMyList" ng-change="setEnabled(e.id, e.enabled)"/>
+				<td class="text-center">
+					<input type="checkbox" ng-model="e.enabled" ng-change="setEnabled(e.id, e.enabled)"/>
+				</td>
+				<td class="text-center">
+					<img class="action" ng-click="removeLocal(e.id)" src="images/trash.png" alt="Uninstall" />
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>

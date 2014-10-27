@@ -1,0 +1,52 @@
+
+<div class="col-md-6">
+	<h3>Local Extensions</h3>
+	<div>
+		<table class="table table-bordered">
+			<tr>
+				<th><a href="" ng-click="localPredicate = 'name'">Name</a></th>
+				<th><a href="" ng-click="localPredicate = ['type', 'name']">Type</a></th>
+				<th class="text-center"><a href="" ng-click="localPredicate = ['enabled', 'name']">Enabled</a></th>
+				<th class="text-center">Uninstall</th>
+			</tr>
+			<tr ng-repeat="e in localExtensions | orderBy:localPredicate">
+				<td>
+					<img width="24" ng-src="{{e.iconUrl}}" />
+					<a target="_blank" ng-href="{{e.homepageUrl}}">{{e.name}}</a>
+				</td>
+				<td>{{e.type}}</td>
+				<td class="text-center">
+					<input type="checkbox" ng-model="e.enabled" ng-change="setEnabled(e.id, e.enabled)"/>
+				</td>
+				<td class="text-center">
+					<img class="action" ng-click="removeLocal(e.id)" src="images/trash.png" alt="Uninstall" />
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<div class="col-md-6">
+	<h3>My Extensions</h3>
+	<div>
+		<table class="table table-bordered">
+			<tr>
+				<th><a href="" ng-click="myPredicate = 'name'">Name</a></th>
+				<th class="text-center"><a href="" ng-click="myPredicate = ['installed', 'name']">Installed</a></th>
+				<th class="text-center">Remove From List</th>
+			</tr>
+			<tr ng-repeat="e in myExtensions | orderBy:myPredicate">
+				<td>
+					<img width="24" ng-src="{{e.iconUrl}}" />
+					<a target="_blank" ng-href="{{e.homepageUrl}}">{{e.name}}</a>
+				</td>
+				<td class="text-center">
+					{{e.installed}}
+				</td>
+				<td class="text-center">
+					<img class="action" ng-click="removeFromMyList(e.id)" src="images/trash.png" alt="Remove Sync" />
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>

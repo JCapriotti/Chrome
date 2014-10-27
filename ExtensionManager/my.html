@@ -1,0 +1,28 @@
+
+<div class="col-md-12">
+	<h2>My Extensions</h2>
+	<div class="alert alert-info" role="alert">
+		To install extensions, click to view their Store page and install from there.
+	</div>
+	<div>
+		<table class="table table-bordered">
+			<tr>
+				<th><a href="" ng-click="myPredicate = 'name'">Name</a></th>
+				<th class="text-center"><a href="" ng-click="myPredicate = ['installed', 'name']">Installed</a></th>
+				<th class="text-center">Remove From List</th>
+			</tr>
+			<tr ng-repeat="e in myExtensions | orderBy:myPredicate">
+				<td>
+					<img width="24" ng-src="{{e.iconUrl}}" />
+					<a target="_blank" ng-href="{{e.homepageUrl}}">{{e.name}}</a>
+				</td>
+				<td class="text-center">
+					{{e.installed}}
+				</td>
+				<td class="text-center">
+					<img class="action" ng-click="removeFromMyList(e.id)" src="images/trash.png" alt="Remove Sync" />
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>

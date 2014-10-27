@@ -1,0 +1,17 @@
+{
+	"name": "Open Drive PDF",
+	"version": "1.0",
+	"manifest_version": 2,
+	"description": "Opens a Google Drive PDF in a new tab.",
+	"container": "GOOGLE_DRIVE",
+	"api_console_project_id" : "eternal-galaxy-742",
+	"background": {
+		"page": "background.html"
+	},
+	"options_page": "options.html",
+	"permissions": [
+		"management",
+		"storage"
+	],
+	"content_security_policy": "script-src 'self' 'unsafe-inline'; object-src 'self'"
+}
