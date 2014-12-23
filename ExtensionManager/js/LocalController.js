@@ -21,10 +21,10 @@ app.controller('LocalController', function ($scope, ExtensionService) {
 
 	$scope.setInMyList = function(id, inMyList) {
 		if (inMyList) {
-			ExtensionService.addExtensionToMyList();
+			ExtensionService.addExtensionToMyList(id);
 		}
 		else {
-			ExtensionService.removeFromMyList(id);
+			ExtensionService.removeExtensionFromMyList(id);
 		}
 		
 	}

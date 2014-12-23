@@ -6,7 +6,9 @@ app.service('ExtensionService', function($q, $window, StorageService) {
 	_management = $window.chrome.management;
 	_this = this;
 
+	////////////////////////////////////////////////////////////////////////////
 	// Returns all locally installed extensions
+	////////////////////////////////////////////////////////////////////////////
 	this.getLocalExtensions = function () {
 		var deferred = $q.defer();
 		
@@ -48,6 +50,9 @@ app.service('ExtensionService', function($q, $window, StorageService) {
 	};
 	
 
+	////////////////////////////////////////////////////////////////////////////
+	// Returns all extensions in "my" list
+	////////////////////////////////////////////////////////////////////////////
 	this.getMyExtensions = function() {
 		var deferred = $q.defer();
 
@@ -65,37 +70,60 @@ app.service('ExtensionService', function($q, $window, StorageService) {
 		return deferred.promise;
 	};	
 	
+
+	////////////////////////////////////////////////////////////////////////////
+	// Adds all locally installed extensions to "my" list
+	////////////////////////////////////////////////////////////////////////////
 	this.addAllLocalToMyList = function() {
-		_management.getAll(function (data) {
-			for (var i = 0; i < data.length; i++) {
-				e = data[i];
+		_management.getAll(function (extensions) {
+			for (var i = 0; i < extensions.length; i++) {
+				e = extensions[i];
 				StorageService.addExtension(e.id, e.name, e.homepageUrl, getIcon(e.icons)).then(angular.noop);
 			}
 		});
 	};
 	
-	this.removeFromMyList = function(id) {
-//		delete _myExtensions[id];
-//		StorageService.setMyExtensions(_myExtensions);
-	};
 	
-	this.clear = function () {
-		_storage.clear();
+	////////////////////////////////////////////////////////////////////////////
+	// Removes an extension from list
+	////////////////////////////////////////////////////////////////////////////
+	this.removeExtensionFromMyList = function(id) {
+		StorageService.removeExtension(id);
 	};
 
-	this.addExtensionToMyList = function (id, name, homepageUrl, iconUrl) {
-//		var newItem = {};
-//		newItem = {
-//			id: id,
-//			name: name,
-//			homepageUrl: homepageUrl,
-//			iconUrl: iconUrl
-//		};
-		
-//		_myExtensions[newItem.id] = newItem;
-//		StorageService.setMyExtensions(_myExtensions);
+	
+	////////////////////////////////////////////////////////////////////////////
+	// Adds extension to list
+	////////////////////////////////////////////////////////////////////////////	
+	this.addExtensionToMyList = function (id) {
+		_management.get(id, function (data) {
+			if (data) {
+				StorageService.addExtension(data.id, data.name, data.homepageUrl, getIcon(data.icons))
+			}
+		});				
 	};
 	
+	
+	
+	////////////////////////////////////////////////////////////////////////////
+	// Gets the data for this extension
+	////////////////////////////////////////////////////////////////////////////
+	this.getMyExtensionData = function () {
+		var deferred = $q.defer();
+
+		_management.getSelf(function (data) {
+			if (data) {
+				deferred.resolve(data);
+			}
+		});				
+		
+		return deferred.promise;
+	};
+	
+	
+	////////////////////////////////////////////////////////////////////////////
+	// Helper to get one icon from the list of extension icons.
+	////////////////////////////////////////////////////////////////////////////
 	function getIcon(icons) {
 		var retval = "";
 		if (icons && icons.length) {
@@ -104,78 +132,15 @@ app.service('ExtensionService', function($q, $window, StorageService) {
 		return retval;
 	}	
 	
+	////////////////////////////////////////////////////////////////////////////
+	// Helper to find an extension in a collection by Id
+	////////////////////////////////////////////////////////////////////////////
 	function findById(data, id) {
 		for (i = 0; i < data.length; i++) {
 			if (data[i].id === id)
 				return data[i];				
 		}
 		return undefined;
-	}
-	
-});
-
-
-app.service('StorageService', function($q, $window) {
-	
-	_storage = $window.chrome.storage.local;
-	_extensionKey = "Extensions";
-	_this = this;
-//	_myExtensions = undefined;
-
-	this.getMyExtensions = function() {
-		var deferred = $q.defer();
-		_storage.get(_extensionKey, function (items) {
-			extensions = items[_extensionKey];
-			if (extensions) {
-				var ret = [];
-				for (var key in extensions) {
-					var e = extensions[key];
-					
-					ret.push({
-						id: e.id,
-						name: e.name,
-						homepageUrl: e.homepageUrl,
-						iconUrl: e.iconUrl
-					});
-				}
-			}				
-			else {
-				extensions = {};
-			}
-//			_myExtensions = extensions;
-			deferred.resolve(ret);
-		});
-		return deferred.promise;
-	};
-	
-//	this.setMyExtensions = function(extensions) {
-//		var setVal = {};
-//		setVal[_extensionKey] = extensions;
-//		_storage.set(setVal);
-//	};
-
-	this.addExtension = function(id, name, homepageUrl, iconUrl) {
-		var deferred = $q.defer();
-		var newItem = {};
-		newItem = {
-			id: id,
-			name: name,
-			homepageUrl: homepageUrl,
-			iconUrl: iconUrl
-		};
-
-		_storage.get(_extensionKey, function (items) {
-			extensions = items[_extensionKey] ? items[_extensionKey] : {};
-			extensions[newItem.id] = newItem;
-			
-			var setVal = {};
-			setVal[_extensionKey] = extensions;
-			_storage.set(setVal, function () {
-				deferred.resolve();
-			});
-		});
-
-		return deferred.promise;
 	}
 	
 });

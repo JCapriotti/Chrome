@@ -1,28 +1,121 @@
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Extensions are stored in storage with keys of "Extension_<id>"
+//
+// Rationale regarding storage sync limits: 
+//		MAX_ITEMS = 512 - Will allow close to 512 extensions to exist in list
+//		QUOTA_BYTES_PER_ITEM = 8192 - Extensions in the list need to store additional data like homepage url, icon url, 
+//			etc. If extensions were all stored in one item, there may only be enough space for 80-100 extensions.
+// 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 var app = angular.module('app');
 
-app.service('StorageService', function ($q, $window) {
+app.service('StorageService', function($q, $window) {
+	
+	_storage = $window.chrome.storage.local;
+	_extensionKey = "Extension_";
+	_this = this;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	getExtensionsFromStorage = function() {
+		var deferred = $q.defer();
+		_storage.get(null, function (items) {
+			if (items) {
+				var ret = [];
+				for (var key in items) {
+					if (key.indexOf(_extensionKey) == 0) {
+						var e = items[key];
+						
+						ret.push({
+							id: e.id,
+							name: e.name,
+							homepageUrl: e.homepageUrl,
+							iconUrl: e.iconUrl
+						});
+					}
+				}
+			}				
+			deferred.resolve(ret);
+		});
+		return deferred.promise;
+	};
 
-	this.addExtension = function (id) {
-		$window.addExtension(id);
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Initialization method to get extensions from storage.
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	_localData = null;
+	_initPromise = getExtensionsFromStorage().then(function(data) {
+		_localData = data;
+	});
+	
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Gets list of "My Extensions". Waits for initialization promise to return, then returns local data.
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	this.getMyExtensions = function() {
+		var deferred = $q.defer();
+		_initPromise.then(function() {
+			deferred.resolve(_localData);
+		});
+		return deferred.promise;
 	};
 	
-	this.getSyncedExtensions = function () {
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Removes extension from list
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	this.removeExtension = function(id) {
 		var deferred = $q.defer();
-		
-		chrome.storage.local.get(null, function (data) {
-			for (var i = 0; i < data.length; i++) {
-				e = data[i];
-				exts.push({
-					id: e.id,
-					homepageUrl: e.homepageUrl,
-					name: e.name,
-					enabled: e.enabled,
-					type: getFriendlyType(e.type)
-				});
-			}
-			deferred.resolve(exts);
+		var key = getKey(id);
+		_storage.remove(key, function () {
+			deferred.resolve();
 		});
+		return deferred.promise;
+	};
+
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Adds an extension to the list
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	this.addExtension = function(id, name, homepageUrl, iconUrl) {
+		var deferred = $q.defer();
+		var newItem = {};
+		newItem = {
+			id: id,
+			name: name,
+			homepageUrl: homepageUrl,
+			iconUrl: iconUrl
+		};
+		
+		var key = getKey(id);
+		var setVal = {};
+		setVal[key] = newItem;
+		_storage.set(setVal, function () {
+			deferred.resolve();
+		});
+
+		return deferred.promise;
 	}
+	
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	this.clearStorage = function () {
+		_storage.clear();
+	};
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Helper to get a chrome.storage key for an extension
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	function getKey(id) {
+		return _extensionKey + id;
+	}
+	
+	
 });
+
