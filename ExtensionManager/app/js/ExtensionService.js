@@ -76,10 +76,17 @@ app.service('ExtensionService', function($q, $window, StorageService) {
 	////////////////////////////////////////////////////////////////////////////
 	this.addAllLocalToMyList = function() {
 		_management.getAll(function (extensions) {
+			var list = [];
 			for (var i = 0; i < extensions.length; i++) {
 				e = extensions[i];
-				StorageService.addExtension(e.id, e.name, e.homepageUrl, getIcon(e.icons)).then(angular.noop);
+				list.push({
+					id: e.id, 
+					name: e.name, 
+					homepageUrl: e.homepageUrl, 
+					iconUrl: getIcon(e.icons)
+				});
 			}
+			StorageService.addExtensions(list).then(angular.noop);
 		});
 	};
 	
@@ -98,7 +105,12 @@ app.service('ExtensionService', function($q, $window, StorageService) {
 	this.addExtensionToMyList = function (id) {
 		_management.get(id, function (data) {
 			if (data) {
-				StorageService.addExtension(data.id, data.name, data.homepageUrl, getIcon(data.icons))
+				StorageService.addExtension({
+					id: data.id, 
+					name: data.name, 
+					homepageUrl: data.homepageUrl, 
+					iconUrl: getIcon(data.icons)
+				})
 			}
 		});				
 	};

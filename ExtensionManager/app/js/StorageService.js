@@ -14,13 +14,15 @@ var app = angular.module('app');
 
 app.service('StorageService', function($q, $window) {
 	
-	_storage = $window.chrome.storage.local;
+	_storage = $window.chrome.storage.sync;
 	_extensionKey = "Extension_";
-	_this = this;
+
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Gets list of "My Extensions". Waits for initialization promise to return, then returns local data.
+	// Uses an array so that it works well with Angular orderBy filter
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	getExtensionsFromStorage = function() {
+	this.getMyExtensions = function() {
 		var deferred = $q.defer();
 		_storage.get(null, function (items) {
 			if (items) {
@@ -28,7 +30,6 @@ app.service('StorageService', function($q, $window) {
 				for (var key in items) {
 					if (key.indexOf(_extensionKey) == 0) {
 						var e = items[key];
-						
 						ret.push({
 							id: e.id,
 							name: e.name,
@@ -39,27 +40,6 @@ app.service('StorageService', function($q, $window) {
 				}
 			}				
 			deferred.resolve(ret);
-		});
-		return deferred.promise;
-	};
-
-	
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Initialization method to get extensions from storage.
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	_localData = null;
-	_initPromise = getExtensionsFromStorage().then(function(data) {
-		_localData = data;
-	});
-	
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Gets list of "My Extensions". Waits for initialization promise to return, then returns local data.
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	this.getMyExtensions = function() {
-		var deferred = $q.defer();
-		_initPromise.then(function() {
-			deferred.resolve(_localData);
 		});
 		return deferred.promise;
 	};
@@ -78,30 +58,40 @@ app.service('StorageService', function($q, $window) {
 	};
 
 	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Adds many extension to the list
+	// extensions is an array of objects containing:
+	//		id, name, homepageUrl, iconUrl
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	this.addExtensions = function(extensions) {
+		var deferred = $q.defer();
+		var storageExtensions = {};
+
+		for (var i = 0; i < extensions.length; i++) {
+			var e = extensions[i];
+			var key = getKey(e.id);
+			storageExtensions[key] = e;
+		}
+		
+		_storage.set(storageExtensions, function () {
+			deferred.resolve();
+		});		
+		return deferred.promise;
+	};
+
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Adds an extension to the list
+	// extension:
+	//		id, name, homepageUrl, iconUrl
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	this.addExtension = function(id, name, homepageUrl, iconUrl) {
-		var deferred = $q.defer();
-		var newItem = {};
-		newItem = {
-			id: id,
-			name: name,
-			homepageUrl: homepageUrl,
-			iconUrl: iconUrl
-		};
-		
-		var key = getKey(id);
-		var setVal = {};
-		setVal[key] = newItem;
-		_storage.set(setVal, function () {
-			deferred.resolve();
-		});
-
-		return deferred.promise;
-	}
+	this.addExtension = function(extension) {
+		return this.addExtensions([extension]);
+	};
 	
-
+	
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	this.clearStorage = function () {
