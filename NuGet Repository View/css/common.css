@@ -1,0 +1,9 @@
+
+
+body {
+	padding: 20px;
+}
+
+.action:hover {
+	cursor: pointer;
+}

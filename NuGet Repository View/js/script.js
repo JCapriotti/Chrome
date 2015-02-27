@@ -1,0 +1,1 @@
+console.log($("title[name=text]").length)
