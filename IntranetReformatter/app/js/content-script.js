@@ -5,15 +5,21 @@ $("h1").replaceWith($('<h2>' + heading + '</h2>'));
 $("body").children("table").eq(0).remove();
 $("body").wrapInner('<div class="container"></div>');
 $("body").prepend('<div id="title" class="jumbotron"><h1>Organizational Development</h1></div>');
+$("body").prepend("<div>Broken? <a href=\"\">Right-click to launch</a> in Incognito and disable extension. Also <a id=\"showHomepage\" href=\"\">review</a> in app store.</div>")
 
 
 // Update Links
 $("a").each(function() {
     var href = $(this).attr("href");
 
-    if (href && href.substring(0, 6) == "\\\\nike") {
-        href = href.replace(/\\/g, "/");
-        href = "file:" + href;
+    if ((href && href.substring(0, 6) == "\\\\nike") ||
+       (href && href.substring(0, 7) == "file://")) 
+    {
+        if (href.substring(0, 6) == "\\\\nike") {
+            href = href.replace(/\\/g, "/");
+            href = "file:" + href;
+        }
+
         $(this).removeAttr("target");
         $(this).click(function (event) {
             event.stopImmediatePropagation();
@@ -77,9 +83,14 @@ navElement.children("li").each(function () {
     var title = $(this).children("a").eq(0).html();
     nav["title"] = cleanupText(title);
 
-    var menu = $(this).children("ul").html().replace("&nbsp;", "");
-    nav["menu"] = menu;
-
+    if ($(this).children("ul").html()) {
+        var menu = $(this).children("ul").html().replace("&nbsp;", "");
+        nav["menu"] = menu;
+    }
+    else {
+        nav["menu"] = "";
+    }
+ 
     navData.push(nav);
 });
 
@@ -144,4 +155,8 @@ $("#disable").click(function (){
     chrome.runtime.sendMessage({command: "disable"});
 });
 
-document.getElementsByTagName('html')[0].style.display='block';
+// Update app store link
+$("#showHomepage").click(function (event) {
+    event.stopImmediatePropagation();
+    chrome.runtime.sendMessage({command: "showHomepage"});
+});

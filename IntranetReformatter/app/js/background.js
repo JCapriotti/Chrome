@@ -13,7 +13,6 @@ var urlFilters = {
 chrome.webNavigation.onDOMContentLoaded.addListener(onContentLoaded, urlFilters);
 
 function onContentLoaded(tab) {
-    chrome.tabs.executeScript(tab.tabId, {code: "document.getElementsByTagName('html')[0].style.display='none';", runAt: "document_start"});
     chrome.tabs.executeScript(tab.tabId, {file: "js/jquery.min.js", runAt: "document_end"});
     chrome.tabs.executeScript(tab.tabId, {file: "bootstrap/js/bootstrap.min.js", runAt: "document_end"});
     chrome.tabs.executeScript(tab.tabId, {file: "js/content-script.js", runAt: "document_end"});
@@ -30,6 +29,9 @@ chrome.runtime.onMessage.addListener(
         else if (request.command == "disable") {
             disable();
             chrome.tabs.reload();
+        }
+        else if (request.command == "showHomepage") {
+            showHomepage();
         }
     });
 
@@ -49,5 +51,11 @@ function openInNewActiveTab(url)
 function disable() {
     chrome.management.getSelf(function (ext) {
         chrome.management.setEnabled(ext.id, false);
+    });
+}
+
+function showHomepage() {
+    chrome.management.getSelf(function (ext) {
+        openInNewActiveTab(ext.homepageUrl)
     });
 }

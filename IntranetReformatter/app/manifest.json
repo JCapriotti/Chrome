@@ -1,6 +1,6 @@
 {
 	"name": "Intranet OD Reformatter",
-	"version": "0.0.1",
+	"version": "1.0.1",
 	"manifest_version": 2,
 	"description": "Makes the Intranet OD site easier to use by changing the navigation and allowing PDFs to open in a new tab.",
 	"browser_action": {
