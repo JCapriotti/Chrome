@@ -1,3 +1,4 @@
+chrome.runtime.sendMessage({command: "validateUrlAndRedirect"});
 
 var heading = $("h1").first().html();
 $("h1").replaceWith($('<h2>' + heading + '</h2>'));

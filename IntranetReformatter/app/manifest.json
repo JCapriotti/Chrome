@@ -1,11 +1,11 @@
 {
 	"name": "Intranet OD Reformatter",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"manifest_version": 2,
 	"description": "Makes the Intranet OD site easier to use by changing the navigation and allowing PDFs to open in a new tab.",
-	"browser_action": {
+	"page_action": {
 		"default_icon": {
-			"16": "images/icon16.png",
+			"19": "images/icon16.png",
 			"48": "images/icon48.png",
 			"128": "images/icon128.png"
 		}
@@ -14,13 +14,13 @@
 		"128": "images/icon128.png"
 	},
 	"background": {
-		"scripts": ["js/background.js"],
-      "persistent": false
+		"scripts": ["js/event-page.js"],
+    	"persistent": false
 	},
 	"permissions": [
-      "management",
-      "tabs",
-      "webNavigation",
-      "http://intranet/"
+		"management",
+		"tabs",
+		"webNavigation",
+		"http://intranet/"
     ]
 }

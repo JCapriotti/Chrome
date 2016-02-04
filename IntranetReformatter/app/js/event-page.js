@@ -1,18 +1,25 @@
 
-
-// Set up loading of JS and CSS
-
+var SITE_URL = "http://intranet/hr"
 
 var urlFilters = {
     "url": [
         {hostEquals: "intranet", pathPrefix: "/od"},
-        {hostEquals: "intranet", pathPrefix: "/OD"}
+        {hostEquals: "intranet", pathPrefix: "/OD"},
+        {hostEquals: "intranet", pathPrefix: "/hr"},
+        {hostEquals: "intranet", pathPrefix: "/HR"},
     ]
 }
 
 chrome.webNavigation.onDOMContentLoaded.addListener(onContentLoaded, urlFilters);
+chrome.runtime.onMessage.addListener(messageHandler);
+
+
+function showPageAction(tabId) {
+    chrome.pageAction.show(tabId);
+};
 
 function onContentLoaded(tab) {
+    showPageAction(tab.tabId)
     chrome.tabs.executeScript(tab.tabId, {file: "js/jquery.min.js", runAt: "document_end"});
     chrome.tabs.executeScript(tab.tabId, {file: "bootstrap/js/bootstrap.min.js", runAt: "document_end"});
     chrome.tabs.executeScript(tab.tabId, {file: "js/content-script.js", runAt: "document_end"});
@@ -20,24 +27,23 @@ function onContentLoaded(tab) {
     chrome.tabs.insertCSS(tab.tabId, {file: "/css/new.css"});
 }
 
+function messageHandler(request, sender, sendResponse) {
+    if (request.command == "openTab") {
+        openInNewActiveTab(request.url)
+    }
+    else if (request.command == "disable") {
+        disable();
+        chrome.tabs.reload();
+    }
+    else if (request.command == "showHomepage") {
+        showHomepage();
+    }
+    else if (request.command == "validateUrlAndRedirect") {
+        validateUrlAndRedirect(sender.tab.id, sender.tab.url)
+    }
+}
 
-chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
-        if (request.command == "openTab") {
-            openInNewActiveTab(request.url)
-        }
-        else if (request.command == "disable") {
-            disable();
-            chrome.tabs.reload();
-        }
-        else if (request.command == "showHomepage") {
-            showHomepage();
-        }
-    });
-
-
-function openInNewActiveTab(url)
-{
+function openInNewActiveTab(url) {
     chrome.tabs.query({"active": true}, function(activeTab) {
         console.log(activeTab[0]);
         chrome.tabs.create({
@@ -58,4 +64,10 @@ function showHomepage() {
     chrome.management.getSelf(function (ext) {
         openInNewActiveTab(ext.homepageUrl)
     });
+}
+
+function validateUrlAndRedirect(tabId, currentUrl) {
+    if (currentUrl.toLowerCase().indexOf(SITE_URL) === -1) {
+        chrome.tabs.update(tabId, {url: SITE_URL});
+    }
 }
